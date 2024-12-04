@@ -15,6 +15,13 @@ func (v Vec) Add(a Vec) Vec {
 	}
 }
 
+func (v Vec) Subtract(a Vec) Vec {
+	return Vec{
+		v[0] - a[0],
+		v[1] - a[1],
+	}
+}
+
 type Lines [][]byte
 
 func (l Lines) CharAt(pos Vec) (byte, bool) {
@@ -78,6 +85,61 @@ func SolutionOne(input io.Reader) error {
 	}
 
 	fmt.Printf("Words found: %d\n", count)
+
+	return nil
+}
+
+func SolutionTwo(input io.Reader) error {
+	directions := []Vec{
+		{1, -1},
+		{1, 1},
+		{-1, 1},
+		{-1, -1},
+	}
+
+	var lines Lines
+
+	scanner := bufio.NewScanner(input)
+
+	for scanner.Scan() {
+		line := make([]byte, len(scanner.Bytes()))
+
+		copy(line, scanner.Bytes())
+
+		lines = append(lines, line)
+	}
+
+	err := scanner.Err()
+	if err != nil {
+		return fmt.Errorf("read input: %w", err)
+	}
+
+	word := []byte("MAS")
+
+	var count int
+
+	for row := range len(lines) {
+		for col := range len(lines[row]) {
+			var hits int
+
+			for _, dir := range directions {
+				hit := checkWord(
+					lines,
+					Vec{row, col}.Subtract(dir),
+					dir,
+					word)
+				if hit {
+					hits++
+				}
+			}
+
+			if hits == 2 {
+				count++
+			}
+		}
+	}
+
+	fmt.Printf("X:es found: %d\n", count)
 
 	return nil
 }
