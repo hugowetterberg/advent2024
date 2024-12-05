@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func SolutionOne(input io.Reader) error {
+func Solution(input io.Reader) error {
 	sc := bufio.NewScanner(input)
 
 	var rules []OrderRule
@@ -32,41 +32,107 @@ func SolutionOne(input io.Reader) error {
 	}
 
 	var (
-		updateCount int
-		middleSum   int
+		updateCount    int
+		middleSum      int
+		invalidUpdates [][]int
 	)
 
 	for sc.Scan() {
 		updateCount++
 
-		mid, err := checkUpdate(sc.Text(), rules)
+		update, err := checkUpdate(sc.Text(), rules)
 		if errors.Is(err, errInvalidUpdate) {
+			invalidUpdates = append(invalidUpdates, update)
+
 			continue
 		} else if err != nil {
 			return fmt.Errorf("verify update %d: %w",
 				updateCount, err)
 		}
 
-		middleSum += mid
+		// Integer division of length should put us in the middle.
+		middleSum += update[len(update)/2]
 	}
 
-	fmt.Printf("Sum of middles: %d\n", middleSum)
+	fmt.Printf("Sum of middles of valid updates: %d\n", middleSum)
+
+	var invalidMiddleSum int
+
+	for i, update := range invalidUpdates {
+		err := fixUpdate(update, rules)
+		if err != nil {
+			return fmt.Errorf("fix invalid update %d: %w", i+1, err)
+		}
+
+		invalidMiddleSum += update[len(update)/2]
+	}
+
+	fmt.Printf("Sum of middles of corrected updates: %d\n", invalidMiddleSum)
 
 	return nil
+}
+
+func fixUpdate(update []int, rules []OrderRule) error {
+	return _fixUpdate(0, update, rules)
+}
+
+func _fixUpdate(depth int, update []int, rules []OrderRule) error {
+	var edits int
+
+	for i := range update {
+		idx, violation := getViolation(update, rules, i)
+		if !violation {
+			continue
+		}
+
+		n := update[idx]
+		copy(update[idx:i], update[idx+1:i])
+		update[i-1] = update[i]
+		update[i] = n
+
+		edits++
+	}
+
+	switch {
+	case edits == 0:
+		return nil
+	case depth < 50:
+		return _fixUpdate(depth+1, update, rules)
+	default:
+		return fmt.Errorf("gave up at depth %d", depth)
+	}
+}
+
+func getViolation(update []int, rules []OrderRule, idx int) (int, bool) {
+	for i := range rules {
+		if rules[i][0] != update[idx] {
+			continue
+		}
+
+		for j := range update[:idx] {
+			if update[j] == rules[i][1] {
+				return j, true
+			}
+		}
+	}
+
+	return 0, false
 }
 
 type OrderRule [2]int
 
 var errInvalidUpdate = errors.New("invalid update")
 
-func checkUpdate(update string, rules []OrderRule) (int, error) {
+func checkUpdate(update string, rules []OrderRule) ([]int, error) {
 	pages := strings.Split(update, ",")
 	pageNums := make([]int, len(pages))
+
+	var violation bool
 
 	for i := range pages {
 		n, err := strconv.Atoi(pages[i])
 		if err != nil {
-			return 0, fmt.Errorf(
+			return nil, fmt.Errorf(
 				"parse page number %d: %w",
 				i+i, err)
 		}
@@ -74,12 +140,15 @@ func checkUpdate(update string, rules []OrderRule) (int, error) {
 		pageNums[i] = n
 
 		if containsAnyRuleTarget(pageNums[:i], n, rules) {
-			return 0, errInvalidUpdate
+			violation = true
 		}
 	}
 
-	// Integer division of length should put us in the middle.
-	return pageNums[len(pageNums)/2], nil
+	if violation {
+		return pageNums, errInvalidUpdate
+	}
+
+	return pageNums, nil
 }
 
 func containsAnyRuleTarget(haystack []int, current int, rules []OrderRule) bool {
