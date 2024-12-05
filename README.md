@@ -92,3 +92,24 @@ FROM tag_cmp
 ORDER BY array_length(added_tags, 1) DESC NULLS LAST
 LIMIT 1;
 ```
+
+### Day 5
+
+``` sql
+WITH
+comparison AS (
+     SELECT
+        production_date,
+        toys_produced,
+        LAG(toys_produced, 1) OVER(
+                           ORDER BY production_date
+        ) previous_day_production
+     FROM toy_production
+     ORDER BY production_date
+)
+SELECT production_date, toys_produced, previous_day_production,
+       toys_produced-previous_day_production AS production_change,
+       toys_produced::float/previous_day_production AS production_change_percentage
+FROM comparison
+ORDER BY toys_produced::float/previous_day_production DESC NULLS LAST;
+```
