@@ -14,6 +14,7 @@ import (
 	"github.com/hugowetterberg/advent2024/d03"
 	"github.com/hugowetterberg/advent2024/d04"
 	"github.com/hugowetterberg/advent2024/d05"
+	"github.com/hugowetterberg/advent2024/d06"
 )
 
 type SolutionFunc func(input io.Reader) error
@@ -24,6 +25,7 @@ var days = [][]SolutionFunc{
 	{d03.SolutionOne, d03.SolutionTwo},
 	{d04.SolutionOne, d04.SolutionTwo},
 	{d05.Solution, d05.Solution},
+	{d06.SolutionOne},
 }
 
 func main() {

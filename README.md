@@ -18,6 +18,8 @@ Usage of /tmp/go-build1045924321/b001/exe/advent2024:
 
 ## Advent of SQL
 
+https://adventofsql.com/
+
 Nerd sniped myself (with help from colleagues) into doing this as well. We'll see how long I'll stick to doing both ...or any :)
 
 ### Day 1
