@@ -10,27 +10,52 @@ import (
 type MapState byte
 
 const (
-	MapStateNone    = 0
-	MapStateVisited = 1
-	MapStateBlocked = 2
+	MapStateNone     = 0
+	MapStateVisited  = 1
+	MapStateBlocked  = 2
+	MapStateDirStart = 4
 )
 
 type AreaMap [][]MapState
 
+func (am AreaMap) inBounds(pos Vec) bool {
+	return pos[0] >= 0 && pos[1] >= 0 &&
+		pos[1] < len(am) && pos[0] < len(am[pos[1]])
+}
+
 func (am AreaMap) Check(pos Vec) (MapState, bool) {
-	if pos[1] >= len(am) || pos[0] >= len(am[pos[1]]) {
+	if !am.inBounds(pos) {
 		return MapStateNone, false
 	}
 
 	return am[pos[1]][pos[0]], true
 }
 
+func (am AreaMap) Get(pos Vec) MapState {
+	if !am.inBounds(pos) {
+		return MapStateNone
+	}
+
+	return am[pos[1]][pos[0]]
+}
+
 func (am AreaMap) Set(pos Vec, state MapState) {
-	if pos[1] >= len(am) || pos[0] >= len(am[pos[1]]) {
+	if !am.inBounds(pos) {
 		return
 	}
 
 	am[pos[1]][pos[0]] |= state
+}
+
+func (am AreaMap) Unset(pos Vec, state MapState) {
+	if !am.inBounds(pos) {
+		return
+	}
+
+	cs := am[pos[1]][pos[0]]
+	if cs&state == state {
+		am[pos[1]][pos[0]] -= state
+	}
 }
 
 func (am AreaMap) Count(state MapState) int {
@@ -55,6 +80,8 @@ func (am AreaMap) DebugDump(w io.Writer, guardPos Vec, dirIdx int) {
 				print(string(dirSymbols[dirIdx]))
 			case cell&MapStateBlocked == MapStateBlocked:
 				print("#")
+			case cell&MapStateVisited == MapStateVisited:
+				print("X")
 			default:
 				print(".")
 			}
@@ -77,6 +104,107 @@ var directions = []Vec{
 }
 
 func SolutionOne(input io.Reader) error {
+	state, err := ReadState(input)
+	if err != nil {
+		return err
+	}
+
+	for state.Move() {
+	}
+
+	visitedCount := state.Area.Count(MapStateVisited)
+
+	fmt.Printf("Visited %d locations\n", visitedCount)
+
+	return nil
+}
+
+func SolutionTwo(input io.Reader) error {
+	state, err := ReadState(input)
+	if err != nil {
+		return err
+	}
+
+	var loopCount int
+
+	for y := range state.Area {
+		for x, cell := range state.Area[y] {
+			if cell&MapStateBlocked == MapStateBlocked {
+				continue
+			}
+
+			isLoop := blockAndCheckForLoop(*state, Vec{x, y})
+			if isLoop {
+				loopCount++
+			}
+		}
+	}
+
+	fmt.Printf("Loop location count: %d\n", loopCount)
+
+	return nil
+}
+
+func blockAndCheckForLoop(s State, pos Vec) bool {
+	s.Area.Set(pos, MapStateBlocked)
+	defer func() {
+		s.Area.Unset(pos, MapStateBlocked)
+
+		// Reset to only blocked states.
+		for y := range s.Area {
+			for x, cell := range s.Area[y] {
+				s.Area[y][x] = cell & MapStateBlocked
+			}
+		}
+	}()
+
+	for s.Move() {
+		current := s.Area.Get(s.GuardPos)
+
+		// Dynamic direction state that we use to mark traversal in a
+		// given direction.
+		dirState := MapState(MapStateDirStart << s.GuardDir)
+
+		// Check if we've visited this position in the current direction.
+		if current&dirState == dirState {
+			return true
+		}
+
+		s.Area.Set(s.GuardPos, dirState)
+	}
+
+	return false
+}
+
+type State struct {
+	Area     AreaMap
+	GuardPos Vec
+	GuardDir int
+}
+
+func (s *State) Move() bool {
+	nextPos := s.GuardPos.Add(directions[s.GuardDir])
+	nextState, insideArea := s.Area.Check(nextPos)
+
+	switch {
+	case !insideArea:
+		s.GuardPos = nextPos
+		return false
+	case nextState&MapStateBlocked == MapStateBlocked:
+		s.GuardDir = (s.GuardDir + 1) % len(directions)
+	default:
+		s.GuardPos = nextPos
+		s.Area.Set(s.GuardPos, MapStateVisited)
+	}
+
+	return true
+}
+
+func (s *State) DebugDump(w io.Writer) {
+	s.Area.DebugDump(w, s.GuardPos, s.GuardDir)
+}
+
+func ReadState(input io.Reader) (*State, error) {
 	sc := bufio.NewScanner(input)
 
 	var (
@@ -98,7 +226,9 @@ func SolutionOne(input io.Reader) error {
 			default:
 				dirIdx = strings.IndexByte(dirSymbols, line[i])
 				if dirIdx == -1 {
-					return fmt.Errorf("unknown guard direction %q", string(line[i]))
+					return nil, fmt.Errorf(
+						"unknown guard direction %q",
+						string(line[i]))
 				}
 
 				guardPos = Vec{i, len(area)}
@@ -110,26 +240,9 @@ func SolutionOne(input io.Reader) error {
 
 	area.Set(guardPos, MapStateVisited)
 
-	for {
-		nextPos := guardPos.Add(directions[dirIdx])
-
-		nextState, insideArea := area.Check(nextPos)
-		if !insideArea {
-			guardPos = nextPos
-			break
-		}
-
-		if nextState&MapStateBlocked == MapStateBlocked {
-			dirIdx = (dirIdx + 1) % len(directions)
-		} else {
-			guardPos = nextPos
-			area.Set(guardPos, MapStateVisited)
-		}
-	}
-
-	visitedCount := area.Count(MapStateVisited)
-
-	fmt.Printf("Visited %d locations\n", visitedCount)
-
-	return nil
+	return &State{
+		Area:     area,
+		GuardPos: guardPos,
+		GuardDir: dirIdx,
+	}, nil
 }
