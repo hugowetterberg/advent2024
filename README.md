@@ -116,6 +116,34 @@ FROM comparison
 ORDER BY toys_produced::float/previous_day_production DESC NULLS LAST;
 ```
 
+### Day 6
+
+``` sql
+WITH average AS (
+    SELECT AVG(price) AS price FROM gifts
+)
+SELECT c.name AS child_name, g.name AS gift_name, g.price AS gift_price
+FROM children AS c
+    INNER JOIN gifts AS g ON g.child_id = c.child_id
+    INNER JOIN average ON g.price > average.price
+ORDER BY g.price
+LIMIT 10;
+```
+
+...or to get the exact answer (name of the kid with most expensive gift that costs more than average):
+
+``` sql
+WITH average AS (
+    SELECT AVG(price) AS price FROM gifts
+)
+SELECT c.name
+FROM children AS c
+    INNER JOIN gifts AS g ON g.child_id = c.child_id
+    INNER JOIN average ON g.price > average.price
+ORDER BY g.price
+LIMIT 1;
+```
+
 ### Day 7
 
 I don't know why the results of this query wasn't accepted by the website, I've checked the results with manual queries and it seems to be fine. Seeing a lot of noise on reddit about correct answes not being accepted, so I don't really know if I'm doing something wrong here :shrug:
