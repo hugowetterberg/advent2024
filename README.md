@@ -115,3 +115,20 @@ SELECT production_date, toys_produced, previous_day_production,
 FROM comparison
 ORDER BY toys_produced::float/previous_day_production DESC NULLS LAST;
 ```
+
+### Day 7
+
+I don't know why the results of this query wasn't accepted by the website, I've checked the results with manual queries and it seems to be fine. Seeing a lot of noise on reddit about correct answes not being accepted, so I don't really know if I'm doing something wrong here :shrug:
+
+``` sql
+SELECT DISTINCT ON (primary_skill)
+    first_value(elf_id) OVER (
+        PARTITION BY primary_skill ORDER BY years_experience DESC, elf_id
+    ) AS elf_1_id,
+    first_value(elf_id) OVER (
+        PARTITION BY primary_skill ORDER BY years_experience, elf_id DESC
+    ) AS elf_2_id,
+    primary_skill AS shared_skill
+FROM workshop_elves
+ORDER BY primary_skill;
+```
