@@ -8,13 +8,31 @@ import (
 	"strings"
 )
 
-func SolutionOne(input io.Reader) error {
+func Solution(input io.Reader) error {
 	sc := bufio.NewScanner(input)
 
 	var (
-		sumValid int
-		line     int
+		sumValidPart1 int
+		sumValidPart2 int
+		line          int
 	)
+
+	operatorsPart1 := []operator{
+		func(a, b int) int {
+			return a * b
+		},
+		func(a, b int) int {
+			return a + b
+		},
+	}
+
+	operatorsPart2 := append([]operator{
+		// Concatenate numbers
+		func(a, b int) int {
+			n, _ := strconv.Atoi(fmt.Sprintf("%d%d", a, b))
+			return n
+		},
+	}, operatorsPart1...)
 
 	for sc.Scan() {
 		line++
@@ -44,32 +62,30 @@ func SolutionOne(input io.Reader) error {
 			numbers[i] = n
 		}
 
-		if seek(numbers, value) {
-			sumValid += value
+		if seek(numbers, value, operatorsPart1) {
+			sumValidPart1 += value
+		}
+
+		if seek(numbers, value, operatorsPart2) {
+			sumValidPart2 += value
 		}
 	}
 
-	fmt.Printf("Sum of valid equations: %d\n", sumValid)
+	fmt.Printf(`Sum of valid equations:
+  Part 1: %d
+  Part 2: %d
+`, sumValidPart1, sumValidPart2)
 
 	return nil
 }
 
 type operator func(a, b int) int
 
-var operators = []operator{
-	func(a, b int) int {
-		return a * b
-	},
-	func(a, b int) int {
-		return a + b
-	},
+func seek(numbers []int, target int, operators []operator) bool {
+	return _seek(numbers, 0, 0, target, operators)
 }
 
-func seek(numbers []int, target int) bool {
-	return _seek(numbers, 0, 0, target)
-}
-
-func _seek(numbers []int, idx int, prod int, target int) bool {
+func _seek(numbers []int, idx int, prod int, target int, operators []operator) bool {
 	if prod > target {
 		return false
 	}
@@ -79,11 +95,11 @@ func _seek(numbers []int, idx int, prod int, target int) bool {
 	}
 
 	if idx == 0 {
-		return _seek(numbers, 1, numbers[0], target)
+		return _seek(numbers, 1, numbers[0], target, operators)
 	}
 
 	for _, op := range operators {
-		found := _seek(numbers, idx+1, op(prod, numbers[idx]), target)
+		found := _seek(numbers, idx+1, op(prod, numbers[idx]), target, operators)
 		if found {
 			return true
 		}

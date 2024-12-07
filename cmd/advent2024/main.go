@@ -27,7 +27,7 @@ var days = [][]SolutionFunc{
 	{d04.SolutionOne, d04.SolutionTwo},
 	{d05.Solution, d05.Solution},
 	{d06.SolutionOne, d06.SolutionTwo},
-	{d07.SolutionOne},
+	{d07.Solution, d07.Solution},
 }
 
 func main() {
