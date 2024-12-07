@@ -146,7 +146,9 @@ LIMIT 1;
 
 ### Day 7
 
-I don't know why the results of this query wasn't accepted by the website, I've checked the results with manual queries and it seems to be fine. Seeing a lot of noise on reddit about correct answes not being accepted, so I don't really know if I'm doing something wrong here :shrug:
+~~I don't know why the results of this query wasn't accepted by the website, I've checked the results with manual queries and it seems to be fine. Seeing a lot of noise on reddit about correct answes not being accepted, so I don't really know if I'm doing something wrong here :shrug:~~
+
+The elf_id was supposed to be used as an ASC tie-breaker for both most and least experienced, I previously assumed DESC for least experience.
 
 ``` sql
 SELECT DISTINCT ON (primary_skill)
@@ -154,7 +156,7 @@ SELECT DISTINCT ON (primary_skill)
         PARTITION BY primary_skill ORDER BY years_experience DESC, elf_id
     ) AS elf_1_id,
     first_value(elf_id) OVER (
-        PARTITION BY primary_skill ORDER BY years_experience, elf_id DESC
+        PARTITION BY primary_skill ORDER BY years_experience, elf_id
     ) AS elf_2_id,
     primary_skill AS shared_skill
 FROM workshop_elves
