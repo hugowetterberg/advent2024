@@ -32,6 +32,14 @@ func towerChar(freq uint64) byte {
 }
 
 func SolutionOne(input io.Reader) error {
+	return solution(input, false)
+}
+
+func SolutionTwo(input io.Reader) error {
+	return solution(input, true)
+}
+
+func solution(input io.Reader, resonantHarmonics bool) error {
 	var antinodes FlagMap
 	var towerMap FlagMap
 
@@ -72,10 +80,24 @@ func SolutionOne(input io.Reader) error {
 				continue
 			}
 
-			delta := b.Position.Subtract(a.Position)
-			aPos := a.Position.Add(delta.Mult(2))
+			if resonantHarmonics {
+				antinodes.Set(a.Position, a.Freq)
+			}
 
-			antinodes.Set(aPos, a.Freq)
+			delta := b.Position.Subtract(a.Position)
+
+			m := 2
+
+			for {
+				aPos := a.Position.Add(delta.Mult(m))
+
+				if !antinodes.Set(aPos, a.Freq) || !resonantHarmonics {
+					break
+				}
+
+				m++
+			}
+
 		}
 	}
 
