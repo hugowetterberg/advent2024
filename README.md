@@ -162,3 +162,28 @@ SELECT DISTINCT ON (primary_skill)
 FROM workshop_elves
 ORDER BY primary_skill;
 ```
+
+### Day 8
+
+Expensive query, there might be a smarter way to do this.
+
+``` sql
+WITH RECURSIVE employees AS (
+    SELECT staff_id, staff_name, manager_id,
+        CASE WHEN manager_id IS NULL THEN array[]::int[] ELSE array[manager_id] END AS employees
+    FROM staff
+    UNION
+    SELECT s.staff_id, s.staff_name, s.manager_id, mr.employees||s.manager_id
+    FROM staff AS s
+    INNER JOIN employees AS mr ON mr.staff_id = s.manager_id
+),
+deduped AS (
+    SELECT DISTINCT ON (staff_id)
+        staff_id, staff_name,
+        COALESCE(array_length(employees, 1), 0)+1 AS level,
+        employees AS path
+    FROM employees
+    ORDER BY staff_id, array_length(employees, 1) DESC NULLS LAST
+)
+SELECT * FROM deduped ORDER BY level DESC;
+```
