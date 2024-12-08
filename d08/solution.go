@@ -89,6 +89,8 @@ func SolutionOne(input io.Reader) error {
 		}
 	}
 
+	DebugDump(towerMap, antinodes)
+
 	fmt.Printf("Number of antinodes: %d\n", antinodeCount)
 
 	return nil
