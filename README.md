@@ -187,3 +187,41 @@ deduped AS (
 )
 SELECT * FROM deduped ORDER BY level DESC;
 ```
+
+### Day 9
+
+``` sql
+WITH avg_ex AS (
+    SELECT r.reindeer_name, t.exercise_name, AVG(t.speed_record) avg_speed
+    FROM Reindeers AS r
+    INNER JOIN Training_Sessions AS t ON t.reindeer_id = r.reindeer_id
+    WHERE r.reindeer_name != 'Rudolf'
+    GROUP BY r.reindeer_name, t.exercise_name
+),
+top_result AS (
+    SELECT reindeer_name, MAX(avg_speed) best_average
+    FROM avg_ex
+    GROUP BY reindeer_name
+)
+SELECT reindeer_name, to_char(best_average, '9999D00') AS best_time FROM top_result
+ORDER BY best_average DESC
+LIMIT 3;
+```
+
+### Day 10
+
+This is probably not the best solution, I'll have to do some googling of pivot queries.
+
+``` sql
+WITH reckoning AS (
+    SELECT date,
+        SUM(case when drink_name='Eggnog' then quantity end) AS eggnog,
+        SUM(case when drink_name='Hot Cocoa' then quantity end) AS hot_cococoa,
+        SUM(case when drink_name='Peppermint Schnapps' then quantity end) AS peppermint_schnapps
+    FROM Drinks GROUP BY date
+)
+SELECT * FROM reckoning
+WHERE eggnog=198
+    AND hot_cococoa=38
+    AND peppermint_schnapps=298;
+```
