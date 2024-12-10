@@ -210,7 +210,9 @@ LIMIT 3;
 
 ### Day 10
 
-This is probably not the best solution, I'll have to do some googling of pivot queries.
+~~This is probably not the best solution, I'll have to do some googling of pivot queries.~~
+
+Nah, this was fine.
 
 ``` sql
 WITH reckoning AS (
