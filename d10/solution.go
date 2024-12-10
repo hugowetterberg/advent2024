@@ -38,7 +38,7 @@ var directions = []Coord{
 	{-1, 0},
 }
 
-func SolutionOne(input io.Reader) error {
+func Solution(input io.Reader) error {
 	var topo TopoMap
 
 	sc := bufio.NewScanner(input)
@@ -58,7 +58,10 @@ func SolutionOne(input io.Reader) error {
 		return fmt.Errorf("read input: %w", err)
 	}
 
-	var sum int
+	var (
+		sum         int
+		sumDistinct int
+	)
 
 	for y := range topo {
 		for x := range topo[y] {
@@ -71,10 +74,13 @@ func SolutionOne(input io.Reader) error {
 			score := len(found)
 
 			sum += score
+
+			sumDistinct += exploreDistinct(topo, Coord{x, y})
 		}
 	}
 
 	fmt.Printf("Sum of trailhead scores: %d\n", sum)
+	fmt.Printf("Sum of trailhead distinct scores: %d\n", sumDistinct)
 
 	return nil
 }
@@ -115,4 +121,34 @@ func _explore(m TopoMap, pos Coord, h byte) []Coord {
 	}
 
 	return endpoints
+}
+
+func exploreDistinct(m TopoMap, pos Coord) int {
+	h, ok := m.GetHeight(pos)
+	if !ok {
+		return 0
+	}
+
+	return _exploreDistinct(m, pos, h)
+}
+
+func _exploreDistinct(m TopoMap, pos Coord, h byte) int {
+	if h == 9 {
+		return 1
+	}
+
+	var sum int
+
+	for i := range directions {
+		newPos := pos.Add(directions[i])
+
+		newHeight, ok := m.GetHeight(newPos)
+		if !ok || newHeight != h+1 {
+			continue
+		}
+
+		sum += _exploreDistinct(m, newPos, newHeight)
+	}
+
+	return sum
 }
