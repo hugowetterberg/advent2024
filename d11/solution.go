@@ -2,10 +2,13 @@ package d11
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io"
 	"strconv"
 	"strings"
+
+	"github.com/hugowetterberg/advent2024/internal"
 )
 
 // If the stone is engraved with the number 0, it is replaced by a stone
@@ -95,6 +98,97 @@ func SolutionOne(input io.Reader) error {
 	}
 
 	fmt.Printf("Number of stones: %v\n", len(front))
+
+	return nil
+}
+
+type CompactedStone struct {
+	Number Stone
+	Count  int
+}
+
+func (cs *CompactedStone) Add(count int) {
+	cs.Count += count
+}
+
+type CompactedStones []CompactedStone
+
+func (cs CompactedStones) Add(n Stone, count int) CompactedStones {
+	for i := range cs {
+		if cs[i].Number == n {
+			cs[i].Count += count
+
+			return cs
+		}
+	}
+
+	return append(cs, CompactedStone{
+		Number: n,
+		Count:  count,
+	})
+}
+
+func (cs CompactedStones) Count() uint64 {
+	var count uint64
+
+	for i := range cs {
+		count += uint64(cs[i].Count)
+	}
+
+	return count
+}
+
+func SolutionTwo(input io.Reader) error {
+	set := flag.NewFlagSet("solution-2", flag.ContinueOnError)
+
+	var blinks int
+
+	set.IntVar(&blinks, "blinks", 75, "number of blinks to simulate")
+
+	err := internal.ParseSolutionFlags(set)
+	if err != nil {
+		return err
+	}
+
+	data, err := io.ReadAll(input)
+	if err != nil {
+		return fmt.Errorf("read input: %w", err)
+	}
+
+	stoneStrs := strings.Split(
+		string(bytes.TrimSpace(data)), " ")
+
+	var stones CompactedStones
+
+	for i := range stoneStrs {
+		s, err := strconv.ParseUint(stoneStrs[i], 10, 64)
+		if err != nil {
+			return fmt.Errorf("invalid stone at position %d: %w",
+				i+1, err)
+		}
+
+		stones = stones.Add(Stone(s), 1)
+	}
+
+	var back CompactedStones
+
+	for range blinks {
+		for _, s := range stones {
+			if s.Number == 0 {
+				back = back.Add(1, s.Count)
+			} else if h, l, ok := s.Number.Split(); ok {
+				back = back.Add(h, s.Count)
+				back = back.Add(l, s.Count)
+			} else {
+				back = back.Add(s.Number*2024, s.Count)
+			}
+		}
+
+		stones, back = back, stones
+		back = back[0:0]
+	}
+
+	fmt.Printf("Number of stones: %v\n", stones.Count())
 
 	return nil
 }

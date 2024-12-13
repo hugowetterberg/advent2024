@@ -20,22 +20,23 @@ import (
 	"github.com/hugowetterberg/advent2024/d09"
 	"github.com/hugowetterberg/advent2024/d10"
 	"github.com/hugowetterberg/advent2024/d11"
+	"github.com/hugowetterberg/advent2024/internal"
 )
 
 type SolutionFunc func(input io.Reader) error
 
 var days = [][]SolutionFunc{
-	{d01.SolutionOne, d01.SolutionTwo},
-	{d02.SolutionOne, d02.SolutionTwo},
-	{d03.SolutionOne, d03.SolutionTwo},
-	{d04.SolutionOne, d04.SolutionTwo},
-	{d05.Solution, d05.Solution},
-	{d06.SolutionOne, d06.SolutionTwo},
-	{d07.Solution, d07.Solution},
-	{d08.SolutionOne, d08.SolutionTwo},
-	{d09.SolutionOne, d09.SolutionTwo},
-	{d10.Solution, d10.Solution},
-	{d11.SolutionOne},
+	{nil, d01.SolutionOne, d01.SolutionTwo},
+	{nil, d02.SolutionOne, d02.SolutionTwo},
+	{nil, d03.SolutionOne, d03.SolutionTwo},
+	{nil, d04.SolutionOne, d04.SolutionTwo},
+	{nil, d05.Solution, d05.Solution},
+	{nil, d06.SolutionOne, d06.SolutionTwo},
+	{nil, d07.Solution, d07.Solution},
+	{nil, d08.SolutionOne, d08.SolutionTwo},
+	{nil, d09.SolutionOne, d09.SolutionTwo},
+	{nil, d10.Solution, d10.Solution},
+	{d11.SolutionOne, d11.SolutionTwo},
 }
 
 func main() {
@@ -52,11 +53,18 @@ func run() error {
 		useSample     bool
 	)
 
-	flag.BoolVar(&useSample, "use-sample", false, "use the sample input")
-	flag.IntVar(&day, "day", 1, "day to run")
-	flag.IntVar(&solution, "solution", 1, "solution to run")
+	set := flag.NewFlagSet("advent2024", flag.ContinueOnError)
 
-	flag.Parse()
+	set.BoolVar(&useSample, "use-sample", false, "use the sample input")
+	set.IntVar(&day, "day", 1, "day to run")
+	set.IntVar(&solution, "solution", 1, "solution to run")
+
+	args, _ := internal.Args(os.Args)
+
+	err := set.Parse(args)
+	if err != nil {
+		return fmt.Errorf("invalid arguments: %w\n", err)
+	}
 
 	if day > len(days) {
 		return fmt.Errorf("I didn't manage more than %d days this year...", len(days))
@@ -114,7 +122,7 @@ func run() error {
 
 	fn := solutions[solution-1]
 
-	err := fn(input)
+	err = fn(input)
 	if err != nil {
 		return fmt.Errorf("solution returned an error: %w", err)
 	}
