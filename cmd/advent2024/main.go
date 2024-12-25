@@ -20,23 +20,25 @@ import (
 	"github.com/hugowetterberg/advent2024/d09"
 	"github.com/hugowetterberg/advent2024/d10"
 	"github.com/hugowetterberg/advent2024/d11"
+	"github.com/hugowetterberg/advent2024/d12"
 	"github.com/hugowetterberg/advent2024/internal"
 )
 
 type SolutionFunc func(input io.Reader) error
 
 var days = [][]SolutionFunc{
-	{nil, d01.SolutionOne, d01.SolutionTwo},
-	{nil, d02.SolutionOne, d02.SolutionTwo},
-	{nil, d03.SolutionOne, d03.SolutionTwo},
-	{nil, d04.SolutionOne, d04.SolutionTwo},
-	{nil, d05.Solution, d05.Solution},
-	{nil, d06.SolutionOne, d06.SolutionTwo},
-	{nil, d07.Solution, d07.Solution},
-	{nil, d08.SolutionOne, d08.SolutionTwo},
-	{nil, d09.SolutionOne, d09.SolutionTwo},
-	{nil, d10.Solution, d10.Solution},
+	{d01.SolutionOne, d01.SolutionTwo},
+	{d02.SolutionOne, d02.SolutionTwo},
+	{d03.SolutionOne, d03.SolutionTwo},
+	{d04.SolutionOne, d04.SolutionTwo},
+	{d05.Solution, d05.Solution},
+	{d06.SolutionOne, d06.SolutionTwo},
+	{d07.Solution, d07.Solution},
+	{d08.SolutionOne, d08.SolutionTwo},
+	{d09.SolutionOne, d09.SolutionTwo},
+	{d10.Solution, d10.Solution},
 	{d11.SolutionOne, d11.SolutionTwo},
+	{d12.SolutionOne},
 }
 
 func main() {
