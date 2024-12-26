@@ -53,11 +53,13 @@ func run() error {
 	var (
 		day, solution int
 		useSample     bool
+		sample        string
 	)
 
 	set := flag.NewFlagSet("advent2024", flag.ContinueOnError)
 
 	set.BoolVar(&useSample, "use-sample", false, "use the sample input")
+	set.StringVar(&sample, "sample", "", "name of specific sample input to use")
 	set.IntVar(&day, "day", 1, "day to run")
 	set.IntVar(&solution, "solution", 1, "solution to run")
 
@@ -82,12 +84,17 @@ func run() error {
 
 	var candidateFiles []string
 
-	if useSample {
+	switch {
+	case sample != "":
+		candidateFiles = []string{
+			fmt.Sprintf("sample-%s.txt", sample),
+		}
+	case useSample:
 		candidateFiles = []string{
 			fmt.Sprintf("sample-%d.txt", solution),
 			"sample.txt",
 		}
-	} else {
+	default:
 		candidateFiles = []string{
 			fmt.Sprintf("input-%d.txt", solution),
 			"input.txt",
