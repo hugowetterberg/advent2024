@@ -259,7 +259,7 @@ var borderOffset = map[Vec]Vec{
 
 const debugGrid = 20
 
-func SolutionOne(input io.Reader) error {
+func Solution(input io.Reader) error {
 	set := flag.NewFlagSet("day12", flag.ContinueOnError)
 
 	var (
@@ -301,6 +301,9 @@ func SolutionOne(input io.Reader) error {
 			width*debugGrid+debugGrid*2,
 			height*debugGrid+debugGrid*2))
 		gc = draw2dimg.NewGraphicContext(dest)
+
+		gc.SetFillColor(color.Black)
+		gc.Clear()
 	}
 
 	var sum, bulkPrice int
@@ -343,10 +346,6 @@ func SolutionOne(input io.Reader) error {
 	}
 
 	return nil
-}
-
-func SolutionTwo(input io.Reader) error {
-	return SolutionOne(input)
 }
 
 func drawRegion(gc *draw2dimg.GraphicContext, r Region) {

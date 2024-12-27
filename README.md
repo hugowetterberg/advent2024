@@ -7,16 +7,53 @@ $ go run ./cmd/advent2024 -day 1 -solution 2 -use-sample
 Similarity: 31
 
 $ go run ./cmd/advent2024 -h
-Usage of /tmp/go-build1045924321/b001/exe/advent2024:
+Usage of advent2024:
   -day int
     	day to run (default 1)
+  -sample string
+    	name of specific sample input to use
   -solution int
     	solution to run (default 1)
   -use-sample
     	use the sample input
 ```
 
-## Advent of SQL
+## Use specific samples
+
+Beginning at day 12 a more robust sample input selection process was needed. Specify `-use-sample` to use "sample-[solution number].txt" or "sample.txt" as input, or specify `-sample=name` to use "sample-[name].txt" as input.
+
+For day 12 the sample collection looked like this:
+
+``` shell
+sample-abba.txt   ## -sample=abba
+sample-eshape.txt ## -sample=eshape
+sample-small.txt  ## -sample=small
+sample.txt        ## -use-sample
+sample-xoxo.txt   ## -sample=xoxo
+```
+
+## Solution flags
+
+Sometimes solutions have solution specific flags that can be set, these flags are separated from the main flags by `--`. To see the documentation for solution flags pass `-- -help` after the standard flags:
+
+``` shellsession
+$ go run ./cmd/advent2024 -day 12 -solution 1 -- -help
+Usage of day12:
+  -debug-region string
+    	output debug image for region
+  -verbose
+    	verbose region output
+```
+
+For day 12 I needed some help visualising the region borders for the second solution, like so:
+
+``` shellsession
+$ go run ./cmd/advent2024 -day 12 -solution 1 -sample=eshape -- -debug-region E
+```
+
+![Graphical representation of the E-shape](d12/debug-eshape.png)
+
+# Advent of SQL
 
 https://adventofsql.com/
 
